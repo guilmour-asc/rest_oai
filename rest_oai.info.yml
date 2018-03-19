@@ -1,0 +1,10 @@
+name: REST OAI
+type: module
+description: "Exposes content as XML mimicking OAI-PMH structure"
+package: Web services
+dependencies:
+  - rest
+  - restui
+version: '8.x-0.1'
+core: '8.x'
+project: 'rest_oai'
