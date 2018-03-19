@@ -12,30 +12,30 @@ The field dependencies are specified on *OAI_GetResource.php* for now...
 But here's the basic list:
 | Element |Is a D.C. element?| Field Name |
 |---------|:------------:|-----------:|
-| Title   | ✔ | field_item_title |
-| Creator Type | ✖ | field_item_creator |
-| Creator (Pers.) | ✔ | field_item_creator_personal |
-| Creator (Corp.) | ✔ | field_item_creator_corporate |
-| Creator (Conf.) | ✔ | field_item_creator_conference |
-| Contributor | ✔ | field_item_contributor |
-| Subject | ✔ | field_item_subject |
-| Coverage | ✔ | field_item_coverage |
-| Description | ✔ | field_item_description |
-| Citation | ✔ | field_item_citation |
-| Type | ✔ | field_item_type |
-| Format | ✔ | field_item_format |
-| Language | ✔ | field_item_language |
-| Publisher's Place | ✔ | field_item_publisher_place |
-| Publisher | ✔ | field_item_publisher |
-| Related Reference | ✔ | field_item_relation_reference |
-| Related Document | ✔ | field_item_relation_document |
-| Source | ✔ | field_item_source |
-| Rights | ✔ | field_item_rights |
-| Digital Document | ✖ | field_item_digital_doc |
-| Document (Upload) | ✔ | field_item_digital_doc_upload |
-| Document (URL) | ✔ | field_item_digital_doc_url |
-| Date of Issue | ✔ | field_item_date_issued |
-| Status | ✖ | field_item_status |
+| Title   | yes | field_item_title |
+| Creator Type | no | field_item_creator |
+| Creator (Pers.) | yes | field_item_creator_personal |
+| Creator (Corp.) | yes | field_item_creator_corporate |
+| Creator (Conf.) | yes | field_item_creator_conference |
+| Contributor | yes | field_item_contributor |
+| Subject | yes | field_item_subject |
+| Coverage | yes | field_item_coverage |
+| Description | yes | field_item_description |
+| Citation | yes | field_item_citation |
+| Type | yes | field_item_type |
+| Format | yes | field_item_format |
+| Language | yes | field_item_language |
+| Publisher's Place | yes | field_item_publisher_place |
+| Publisher | yes | field_item_publisher |
+| Related Reference | yes | field_item_relation_reference |
+| Related Document | yes | field_item_relation_document |
+| Source | yes | field_item_source |
+| Rights | yes | field_item_rights |
+| Digital Document | no | field_item_digital_doc |
+| Document (Upload) | yes | field_item_digital_doc_upload |
+| Document (URL) | yes | field_item_digital_doc_url |
+| Date of Issue | yes | field_item_date_issued |
+| Status | no | field_item_status |
 
 ## Why is it so raw and simple?
 Well then, I'm still a **noob** at PHP and even Drupal. Can't do much magic at the time, so get grateful for what you have right now, ok...
