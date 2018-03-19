@@ -11,7 +11,7 @@ This module, made for **Drupal 8.4.x**, exposes Dublin Core metadata (actually, 
 The field dependencies are specified on *OAI_GetResource.php* for now...
 But here's the basic list:
 | Element |Is a D.C. element?| Field Name |
-|:--------|:------------:|-----------:|
+|---------|:------------:|-----------:|
 | Title   | ✔ | field_item_title |
 | Creator Type | ✖ | field_item_creator |
 | Creator (Pers.) | ✔ | field_item_creator_personal |
