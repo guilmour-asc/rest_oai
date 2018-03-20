@@ -1,29 +1,36 @@
 <?php
 namespace Drupal\rest_oai\Plugin\rest\resource;
+
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
+use Drupal\file\Entity;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Psr\Log\LoggerInterface;
+
 /**
  * Provides a resource to get view modes by entity and bundle.
  *
  * @RestResource(
- *   id = "oai_get_resource",
- *   label = @Translation("OAI-mimic Resource"),
+ *   id = "oai_list_records",
+ *   label = @Translation("OAI: List Records"),
  *   uri_paths = {
- *     "canonical" = "/oai"
+ *     "canonical" = "/oai/listrecords"
  *   }
  * )
  */
-class OAI_GetResource extends ResourceBase {
+
+class OAI_ListRecords extends ResourceBase {
+  
   /**
    * A current user instance.
    *
    * @var \Drupal\Core\Session\AccountProxyInterface
    */
+  
   protected $currentUser;
+  
   /**
    * Constructs a Drupal\rest\Plugin\ResourceBase object.
    *
@@ -50,6 +57,7 @@ class OAI_GetResource extends ResourceBase {
       parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
       $this->currentUser = $current_user;
   }
+  
   /**
    * {@inheritdoc}
    */
@@ -63,6 +71,7 @@ class OAI_GetResource extends ResourceBase {
       $container->get('current_user')
     );
   }
+  
   /**
    * Responds to GET requests.
    *
@@ -86,15 +95,50 @@ class OAI_GetResource extends ResourceBase {
       $result[$entity->id()] = array(
         'dc:title' => $entity->title->value,
         'dc:creator' => $entity->get('field_creator_personal')->value,
-        'dc:citation' => $entity->get('field_citation')[0]->value,
+        'dc:citation' => $entity->get('field_citation')->value,
+        'dc:contributor' => $entity->get('field_contributor')->value,
+        'dc:subject' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_subject')),
+        'dc:coverage' => $entity->get('field_coverage')->value,
+        'dc:description' => $entity->get('field_description')->value,
+        'dc:citation' => $entity->get('field_citation')->value,
+        'dc:type' => $entity->get('field_type')->value,
+        'dc:format' => $entity->get('field_format')->value,
+        'dc:language scheme="ags:ISO639-2"' => $entity->get('field_language')->value,
+        'dc:publisher:place' => $entity->get('field_publisher_place')->value,
+        'dc:publisher' => $entity->get('field_publisher')->value,
+        'dc:relation' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_related_reference')),
+        'dc:relation:ispartof' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_related_document')),
+        'dc:source' => $entity->get('field_source')->value,
+        'dc:rights' => $entity->get('field_rights')->value,
+        'dc:identifier:uri' => \Drupal\rest_oai\Plugin\rest\resource\getFileURI($entity->get('field_digital_document')->value, $entity->get('field_document_upload'), $entity->get('field_document_url')),
         'dcterms:dateIssued' => $entity->get('field_date_issued')->value,
-        'dc:language scheme=&quot;ags:ISO639-2&quot;"' => $entity->get('field_language')->value,
-        'bitch' => array('tsu:gero' => 'ma pussy pops')
+        'bitch' => array('tsu:gero' => 'ma pussy pops'),
         );
     }
     unset($entity);
     $response = new ResourceResponse($result);
     $response->addCacheableDependency($result);
     return $response;
+  }
+}
+
+// Getting the listage of references (subject, related references/document, etc.), of the item...
+function getReferences($list){
+  $terms = array();
+  if(!$list->isEmpty()){
+    foreach($list as $singleTerm){
+      $terms[] = $singleTerm->target_id;
+      }
+  }
+  return implode(", ",$terms);
+}
+
+// Getting the URI of the item's file...
+function getFileURI($documentType, $caseUpload, $caseExternal){
+  if(strcmp($documentType,'upload') == 0){
+    return file_create_url($caseUpload->entity->getFileUri());
+  }
+  else{
+    return $caseExternal->uri;
   }
 }
