@@ -1,0 +1,5 @@
+# services:
+#   encoder.oaixml:
+#     class: Drupal\rest_oai\Encoder\OAIXMLEncoder
+#     tags:
+#       - {name: 'encoder', format: 'oaixml'}

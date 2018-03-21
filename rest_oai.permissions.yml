@@ -1,3 +1,0 @@
-access oai_getrecords:
-  title: 'Access GET on OAI: List Records resource'
-  restrict access: FALSE
