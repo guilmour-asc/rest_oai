@@ -98,6 +98,11 @@ class OAI_Resource extends ResourceBase {
         return $response;
         break;
       
+      case 'listsets':
+        $response = listSets();
+        return $response;
+        break;
+      
       default:
         # code...
         break;
@@ -154,12 +159,34 @@ function listSets(){
   $entities = \Drupal::entityTypeManager()
     ->getStorage('node')
     ->loadByProperties(['type' => 'collection']);
+  $result['responseDate'] = date("l, Y-m-d, h:i:s A");
+  $result['request verb="ListSets"'] = 'http://solidaridadlibrary.org/oai/';
   foreach ($entities as $entity) {
-
+    $result[$entity->id()] = array(
+      'header' => array(
+        'identifier' => '',
+        'datestamp' => '',
+        'setSpec' => ''
+      ),
+      'metadata' => array(
+        'dc:identifier' => array(
+          'dc:identifier:number' => $entity->id()
+        ),
+        'dc:type' => 'Collection',
+        'dc:title' => $entity->title->value,
+        'dc:language scheme="ags:ISO639-2"' => $entity->get('field_language_c')->value,
+        'dcterms:alternative' => \Drupal\rest_oai\Plugin\rest\resource\getDoubleFields($entity->get('field_translated_title')),
+        'dcterms:abstract' => $entity->get('field_abstract')->value,
+        'cld:itemType' => $entity->get('field_type_c')->value,
+        'dc:subject' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_commodities')),
+        'dcterms:spatial' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_countries'))
+        // 'data' => $entity->getFields()
+        )
+    );
   }
   unset($entity);
   $response = new ResourceResponse($result);
-  $response->addCacheableDependency($result);
+  // $response->addCacheableDependency($result);
   return $response;
 }
 
@@ -172,6 +199,17 @@ function getReferences($list){
       }
   }
   return implode(", ",$terms);
+}
+
+// Getting the listage of double-fields...
+function getDoubleFields($list){
+  $terms = array();
+  if(!$list->isEmpty()){
+    foreach($list as $singleTerm){
+      $terms[] = $singleTerm->first.': '.$singleTerm->second;
+      }
+  }
+  return implode("; ",$terms);
 }
 
 // Getting the URI of the item's file...
