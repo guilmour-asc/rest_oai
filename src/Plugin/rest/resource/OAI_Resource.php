@@ -141,7 +141,6 @@ function listRecords(){
         'dc:source' => $entity->get('field_source')->value,
         'dc:rights' => $entity->get('field_rights')->value,
         'dcterms:dateIssued' => $entity->get('field_date_issued')->value,
-        'bitch' => array('tsu:gero' => 'ma pussy pops')
         )
       );
   }
