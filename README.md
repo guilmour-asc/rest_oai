@@ -3,6 +3,16 @@
 ## Overview
 This module, made for **Drupal 8.4.x**, exposes Dublin Core metadata (actually, the nodes' content of your Drupal site involved on Dublin Core elements) as XML or JSON, giving ***a way to supply your content according to the OAI Protocol for Metadata Harvesting***.
 
+### OAI Verbs
+| Verb               | Done? |
+|--------------------|:-----:|
+| Identify           |   ✖   |
+| GetRecord          |   ✖   |
+| ListRecords        |   ✔   |
+| ListSets           |   ✔   |
+| ListMetadataPrefix |   ✖   |
+| ListIdentifiers    |   ✖   |
+
 ## Dependencies (modules)
 * REST
 * REST UI

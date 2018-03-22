@@ -186,7 +186,7 @@ function listSets(){
   }
   unset($entity);
   $response = new ResourceResponse($result);
-  // $response->addCacheableDependency($result);
+  $response->addCacheableDependency($result);
   return $response;
 }
 
