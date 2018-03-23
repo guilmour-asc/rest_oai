@@ -11,7 +11,7 @@ This module, made for **Drupal 8.4.x**, exposes Dublin Core metadata (actually, 
 | ListRecords         |   ✔   |
 | ListSets            |   ✔   |
 | ListMetadataFormats |   ✔   |
-| ListIdentifiers     |   ✖   |
+| ListIdentifiers     |   ✔   |
 
 ## Dependencies (modules)
 * REST
