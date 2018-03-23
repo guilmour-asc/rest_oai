@@ -124,6 +124,10 @@ class OAI_Resource extends ResourceBase {
         return listMetadataFormats();
         break;
       
+      case 'listidentifiers':
+        return listIdentifiers($set_id);
+        break;
+      
       default:
         # code...
         break;
@@ -356,6 +360,51 @@ function listMetadataFormats(){
   return $response;
 }
 // ------------------------------------
+
+// ---------- Verb: LISTIDENTIFIERS
+function listIdentifiers($set_id){
+  $entities = \Drupal::entityTypeManager()
+    ->getStorage('node')
+    ->loadByProperties(['type' => 'item']);
+  $result['responseDate'] = date("Y-m-d\TH:i:s\Z");
+  if(!$set_id){
+    $result['request verb="ListIdentifiers"'] = 'http://solidaridadlibrary.org/oai/';
+    foreach ($entities as $entity) {
+      $result[$entity->id()] = array(
+        'header' => array(
+          'identifier' => '',
+          'datestamp' => '',
+          'setSpec' => ''
+        )
+      );
+    }
+    unset($entities);
+    $response = new ResourceResponse($result);
+    $response->addCacheableDependency($result);
+    unset($result);
+    return $response;
+  }
+  else{
+    $result['request verb="ListRecords" set="'.$set_id.'"'] = 'http://solidaridadlibrary.org/oai/';    
+    foreach ($entities as $entity) {
+      if(stripos(\Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_related_reference')), strval($set_id)) !== false){
+        $result[$entity->id()] = array(
+          'header' => array(
+            'identifier' => '',
+            'datestamp' => '',
+            'setSpec' => ''
+          ),
+        );
+      }
+    }
+    unset($entities);
+    $response = new ResourceResponse($result);
+    $response->addCacheableDependency($result);
+    unset($result);
+    return $response;
+  }
+}
+// --------------------------------
 
 // GETTING THE LISTAGE OF REFERENCES (SUBJECT, RELATED REFERENCES/DOCUMENT, ETC.), OF THE ITEM...
 function getReferences($list){
