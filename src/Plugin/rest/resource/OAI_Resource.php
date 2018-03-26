@@ -85,7 +85,7 @@ class OAI_Resource extends ResourceBase {
    * Responds to GET requests.
    *
    * Returns a list of bundles for specified entity, or a single node, or even the library's info.
-   * Response is dependent of the verb passed
+   * The RESPONSE is dependent of the VERB passed
    *
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    *   Throws exception expected.
@@ -159,7 +159,7 @@ function identify(){
 function getRecord($param_id){
   if(!$param_id){
     $result['responseDate'] = date("Y-m-d\TH:i:s\Z");
-    $result['request verb="GetRecord" id="'.$param_id.'"'] = 'http://solidaridadlibrary.org/oai/';
+    $result['request verb="GetRecord"'] = 'http://solidaridadlibrary.org/oai/';
     $result['error'] = 'Verb Error: the id was not specified as a parameter, on the verb\'s calling.';
     $response = new ResourceResponse($result);
     $response->addCacheableDependency($result);
