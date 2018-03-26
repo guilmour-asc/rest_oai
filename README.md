@@ -56,4 +56,4 @@ Well then, I'm still a **noob** at PHP and even Drupal. Can't do much magic at t
 You might interest in removing the *.git folder* of this module, after downloading it. I remember to have some issues with git, specially when you want to push your site in Github, so here's ma tip, bro.
 
 ## Status of the Module
-**IN DEVELOPMENT** (gimme some days or a week, please...).
+**IN DEVELOPMENT** (almost finishing...).
