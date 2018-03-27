@@ -137,6 +137,14 @@ class OAI_Resource extends ResourceBase {
 
 // ---------- Verb: IDENTIFY
 function identify(){
+  $earliestDate = date_parse(date());
+  $entities = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple();
+  foreach ($entities as $entity) {
+    if($earliestDate > $entity->getCreatedTime()) {
+      $earliestDate = $entity->getCreatedTime();
+    }
+  }
+
   $result['responseDate'] = date("Y-m-d\TH:i:s\Z");
   $result['request verb="Identify"'] = 'http://solidaridadlibrary.org/oai/';
   $result['Identify'] = array(
@@ -144,13 +152,15 @@ function identify(){
     'baseURL' => 'http://solidaridadlibrary.org/oai/',
     'protocolVersion' => '2.0',
     'adminEmail' => 'contact@solidaridadlibrary.org',
-    'earliestDatestamp' => '',
+    'earliestDatestamp' => date("Y-m-d\TH:i:s\Z", $earliestDate),
     'deletedRecord' => 'no',
     'granularity' => 'YYYY-MM-DDThh:mm:ssZ'
   );
   $response = new ResourceResponse($result);
   $response->addCacheableDependency($result);
+  unset($entities);
   unset($result);
+  unset($earliestDate);
   return $response;
 }
 // -------------------------
@@ -174,33 +184,33 @@ function getRecord($param_id){
     $result['request verb="GetRecord" id="'.$param_id.'"'] = 'http://solidaridadlibrary.org/oai/';
     $result['record'] = array(
       'header' => array(
-        'identifier' => '',
-        'datestamp' => '',
-        'setSpec' => ''
+        'identifier' => $entity->get('uuid')->value,
+        'datestamp' => date("Y-m-d\TH:i:s\Z", $entity->getCreatedTime()),
+        'setSpec' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_item_relation_reference'))
       ),
       'metadata' => array(
         'dc:identifier' => array(
           'dc:identifier:number' => $entity->id(),
-          'dc:identifier:uri' => \Drupal\rest_oai\Plugin\rest\resource\getFileURI($entity->get('field_digital_document')->value, $entity->get('field_document_upload'), $entity->get('field_document_url')),
-          'dc:identifier:citation' => $entity->get('field_citation')->value,
+          'dc:identifier:uri' => \Drupal\rest_oai\Plugin\rest\resource\getFileURI($entity->get('field_item_digital_doc')->value, $entity->get('field_item_digital_doc_upload'), $entity->get('field_item_digital_doc_url')),
+          'dc:identifier:citation' => $entity->get('field_item_citation')->value,
         ),
         'dc:title' => $entity->title->value,
-        'dc:creator' => $entity->get('field_creator_personal')->value,
-        'dc:citation' => $entity->get('field_citation')->value,
-        'dc:contributor' => $entity->get('field_contributor')->value,
-        'dc:subject' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_subject')),
-        'dc:coverage' => $entity->get('field_coverage')->value,
-        'dc:description' => $entity->get('field_description')->value,
-        'dc:type' => $entity->get('field_type')->value,
-        'dc:format' => $entity->get('field_format')->value,
-        'dc:language scheme="ags:ISO639-2"' => $entity->get('field_language')->value,
-        'dc:publisher:place' => $entity->get('field_publisher_place')->value,
-        'dc:publisher' => $entity->get('field_publisher')->value,
-        'dc:relation' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_related_reference')),
-        'dc:relation:ispartof' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_related_document')),
-        'dc:source' => $entity->get('field_source')->value,
-        'dc:rights' => $entity->get('field_rights')->value,
-        'dcterms:dateIssued' => $entity->get('field_date_issued')->value
+        'dc:creator' => \Drupal\rest_oai\Plugin\rest\resource\getCreator($entity->get('field_item_creator')->value, $entity->get('field_item_creator_personal')->value, $entity->get('field_item_creator_corporate')->value, $entity->get('field_item_creator_conference')->value),
+        'dc:citation' => $entity->get('field_item_citation')->value,
+        'dc:contributor' => $entity->get('field_item_contributor')->value,
+        'dc:subject' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_item_subject')),
+        'dc:coverage' => $entity->get('field_item_coverage')->value,
+        'dc:description' => $entity->get('field_item_description')->value,
+        'dc:type' => $entity->get('field_item_type')->value,
+        'dc:format' => $entity->get('field_item_format')->value,
+        'dc:language scheme="ags:ISO639-2"' => $entity->get('field_item_language')->value,
+        'dc:publisher:place' => $entity->get('field_item_publisher_place')->value,
+        'dc:publisher' => $entity->get('field_item_publisher')->value,
+        'dc:relation' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_item_relation_reference')),
+        'dc:relation:ispartof' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_item_relation_document')),
+        'dc:source' => $entity->get('field_item_source')->value,
+        'dc:rights' => $entity->get('field_item_rights')->value,
+        'dcterms:dateIssued' => $entity->get('field_item_date_issued')->value
         )
       );
     unset($entities);
@@ -223,33 +233,33 @@ function listRecords($set_id){
     foreach ($entities as $entity) {
       $result[$entity->id()] = array(
         'header' => array(
-          'identifier' => '',
-          'datestamp' => '',
-          'setSpec' => ''
+          'identifier' => $entity->get('uuid')->value,
+          'datestamp' => date("Y-m-d\TH:i:s\Z", $entity->getCreatedTime()),
+          'setSpec' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_item_relation_reference'))
         ),
         'metadata' => array(
           'dc:identifier' => array(
             'dc:identifier:number' => $entity->id(),
-            'dc:identifier:uri' => \Drupal\rest_oai\Plugin\rest\resource\getFileURI($entity->get('field_digital_document')->value, $entity->get('field_document_upload'), $entity->get('field_document_url')),
-            'dc:identifier:citation' => $entity->get('field_citation')->value,
+            'dc:identifier:uri' => \Drupal\rest_oai\Plugin\rest\resource\getFileURI($entity->get('field_item_digital_doc')->value, $entity->get('field_item_digital_doc_upload'), $entity->get('field_item_digital_doc_url')),
+            'dc:identifier:citation' => $entity->get('field_item_citation')->value,
           ),
           'dc:title' => $entity->title->value,
-          'dc:creator' => $entity->get('field_creator_personal')->value,
-          'dc:citation' => $entity->get('field_citation')->value,
-          'dc:contributor' => $entity->get('field_contributor')->value,
-          'dc:subject' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_subject')),
-          'dc:coverage' => $entity->get('field_coverage')->value,
-          'dc:description' => $entity->get('field_description')->value,
-          'dc:type' => $entity->get('field_type')->value,
-          'dc:format' => $entity->get('field_format')->value,
-          'dc:language scheme="ags:ISO639-2"' => $entity->get('field_language')->value,
-          'dc:publisher:place' => $entity->get('field_publisher_place')->value,
-          'dc:publisher' => $entity->get('field_publisher')->value,
-          'dc:relation' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_related_reference')),
-          'dc:relation:ispartof' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_related_document')),
-          'dc:source' => $entity->get('field_source')->value,
-          'dc:rights' => $entity->get('field_rights')->value,
-          'dcterms:dateIssued' => $entity->get('field_date_issued')->value
+          'dc:creator' => \Drupal\rest_oai\Plugin\rest\resource\getCreator($entity->get('field_item_creator')->value, $entity->get('field_item_creator_personal')->value, $entity->get('field_item_creator_corporate')->value, $entity->get('field_item_creator_conference')->value),
+          'dc:citation' => $entity->get('field_item_citation')->value,
+          'dc:contributor' => $entity->get('field_item_contributor')->value,
+          'dc:subject' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_item_subject')),
+          'dc:coverage' => $entity->get('field_item_coverage')->value,
+          'dc:description' => $entity->get('field_item_description')->value,
+          'dc:type' => $entity->get('field_item_type')->value,
+          'dc:format' => $entity->get('field_item_format')->value,
+          'dc:language scheme="ags:ISO639-2"' => $entity->get('field_item_language')->value,
+          'dc:publisher:place' => $entity->get('field_item_publisher_place')->value,
+          'dc:publisher' => $entity->get('field_item_publisher')->value,
+          'dc:relation' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_item_relation_reference')),
+          'dc:relation:ispartof' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_item_relation_document')),
+          'dc:source' => $entity->get('field_item_source')->value,
+          'dc:rights' => $entity->get('field_item_rights')->value,
+          'dcterms:dateIssued' => $entity->get('field_item_date_issued')->value
           )
         );
     }
@@ -262,36 +272,36 @@ function listRecords($set_id){
   else{
     $result['request verb="ListRecords" set="'.$set_id.'"'] = 'http://solidaridadlibrary.org/oai/';    
     foreach ($entities as $entity) {
-      if(stripos(\Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_related_reference')), strval($set_id)) !== false){
+      if(stripos(\Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_item_relation_reference')), strval($set_id)) !== false){
         $result[$entity->id()] = array(
           'header' => array(
-            'identifier' => '',
-            'datestamp' => '',
-            'setSpec' => ''
+            'identifier' => $entity->get('uuid')->value,
+            'datestamp' => date("Y-m-d\TH:i:s\Z", $entity->getCreatedTime()),
+            'setSpec' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_item_relation_reference'))
           ),
           'metadata' => array(
             'dc:identifier' => array(
               'dc:identifier:number' => $entity->id(),
-              'dc:identifier:uri' => \Drupal\rest_oai\Plugin\rest\resource\getFileURI($entity->get('field_digital_document')->value, $entity->get('field_document_upload'), $entity->get('field_document_url')),
-              'dc:identifier:citation' => $entity->get('field_citation')->value,
+              'dc:identifier:uri' => \Drupal\rest_oai\Plugin\rest\resource\getFileURI($entity->get('field_item_digital_doc')->value, $entity->get('field_item_digital_doc_upload'), $entity->get('field_item_digital_doc_url')),
+              'dc:identifier:citation' => $entity->get('field_item_citation')->value,
             ),
             'dc:title' => $entity->title->value,
             'dc:creator' => $entity->get('field_creator_personal')->value,
-            'dc:citation' => $entity->get('field_citation')->value,
-            'dc:contributor' => $entity->get('field_contributor')->value,
-            'dc:subject' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_subject')),
-            'dc:coverage' => $entity->get('field_coverage')->value,
-            'dc:description' => $entity->get('field_description')->value,
-            'dc:type' => $entity->get('field_type')->value,
-            'dc:format' => $entity->get('field_format')->value,
-            'dc:language scheme="ags:ISO639-2"' => $entity->get('field_language')->value,
-            'dc:publisher:place' => $entity->get('field_publisher_place')->value,
-            'dc:publisher' => $entity->get('field_publisher')->value,
-            'dc:relation' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_related_reference')),
-            'dc:relation:ispartof' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_related_document')),
-            'dc:source' => $entity->get('field_source')->value,
-            'dc:rights' => $entity->get('field_rights')->value,
-            'dcterms:dateIssued' => $entity->get('field_date_issued')->value
+            'dc:citation' => $entity->get('field_item_citation')->value,
+            'dc:contributor' => $entity->get('field_item_contributor')->value,
+            'dc:subject' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_item_subject')),
+            'dc:coverage' => $entity->get('field_item_coverage')->value,
+            'dc:description' => $entity->get('field_item_description')->value,
+            'dc:type' => $entity->get('field_item_type')->value,
+            'dc:format' => $entity->get('field_item_format')->value,
+            'dc:language scheme="ags:ISO639-2"' => $entity->get('field_item_language')->value,
+            'dc:publisher:place' => $entity->get('field_item_publisher_place')->value,
+            'dc:publisher' => $entity->get('field_item_publisher')->value,
+            'dc:relation' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_item_relation_reference')),
+            'dc:relation:ispartof' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_item_relation_document')),
+            'dc:source' => $entity->get('field_item_source')->value,
+            'dc:rights' => $entity->get('field_item_rights')->value,
+            'dcterms:dateIssued' => $entity->get('field_item_date_issued')->value
             )
           );
         }
@@ -314,24 +324,18 @@ function listSets(){
   $result['request verb="ListSets"'] = 'http://solidaridadlibrary.org/oai/';
   foreach ($entities as $entity) {
     $result[$entity->id()] = array(
-      'header' => array(
-        'identifier' => '',
-        'datestamp' => '',
-        'setSpec' => ''
-      ),
-      'metadata' => array(
-        'dc:identifier' => array(
-          'dc:identifier:number' => $entity->id()
-        ),
+      'setName' => $entity->title->value,
+      'setSpec' => $entity->id(),
+      'setDescription' => array(
         'dc:type' => 'Collection',
         'dc:title' => $entity->title->value,
-        'dc:language scheme="ags:ISO639-2"' => $entity->get('field_language_c')->value,
-        'dcterms:alternative' => \Drupal\rest_oai\Plugin\rest\resource\getDoubleFields($entity->get('field_translated_title')),
-        'dcterms:abstract' => $entity->get('field_abstract')->value,
-        'cld:itemType' => $entity->get('field_type_c')->value,
-        'dc:subject' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_commodities')),
-        'dcterms:spatial' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_countries'))
-        // 'data' => $entity->getFields()
+        'dc:language scheme="ags:ISO639-2"' => $entity->get('field_coll_language')->value,
+        'dcterms:alternative' => \Drupal\rest_oai\Plugin\rest\resource\getDoubleFields($entity->get('field_coll_title_translated')),
+        'dcterms:abstract' => $entity->get('field_coll_abstract')->value,
+        'cld:itemType' => $entity->get('field_coll_type')->value,
+        'dc:subject' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_coll_commodities')),
+        'dcterms:spatial' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_coll_countries')),
+        // 'data' => $entity->baseFieldDefinitions($entity)
         )
     );
   }
@@ -372,9 +376,9 @@ function listIdentifiers($set_id){
     foreach ($entities as $entity) {
       $result[$entity->id()] = array(
         'header' => array(
-          'identifier' => '',
-          'datestamp' => '',
-          'setSpec' => ''
+          'identifier' => $entity->get('uuid')->value,
+          'datestamp' => date("Y-m-d\TH:i:s\Z", $entity->getCreatedTime()),
+          'setSpec' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_item_relation_reference'))
         )
       );
     }
@@ -387,12 +391,12 @@ function listIdentifiers($set_id){
   else{
     $result['request verb="ListRecords" set="'.$set_id.'"'] = 'http://solidaridadlibrary.org/oai/';    
     foreach ($entities as $entity) {
-      if(stripos(\Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_related_reference')), strval($set_id)) !== false){
+      if(stripos(\Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_item_relation_reference')), strval($set_id)) !== false){
         $result[$entity->id()] = array(
           'header' => array(
-            'identifier' => '',
-            'datestamp' => '',
-            'setSpec' => ''
+            'identifier' => $entity->get('uuid')->value,
+            'datestamp' => date("Y-m-d\TH:i:s\Z", $entity->getCreatedTime()),
+            'setSpec' => \Drupal\rest_oai\Plugin\rest\resource\getReferences($entity->get('field_item_relation_reference'))
           ),
         );
       }
@@ -435,5 +439,19 @@ function getFileURI($documentType, $caseUpload, $caseExternal){
   }
   else{
     return $caseExternal->uri;
+  }
+}
+
+// GETTING THE CREATOR, ACCORDING TO THE TYPE...
+function getCreator($creatorType, $personal, $corporate, $conference){
+  switch ($creatorType) {
+    case 'personal':
+      return $personal;
+    
+    case 'corporate':
+      return $corporate;
+    
+    case 'conference':
+      return $conference;
   }
 }
